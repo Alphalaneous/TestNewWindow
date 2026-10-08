@@ -1,33 +1,33 @@
 #include <Geode/Geode.hpp>
+#include <Geode/modify/MenuLayer.hpp>
+#include "Window.hpp"
 
 using namespace geode::prelude;
 
-#include <Geode/modify/MenuLayer.hpp>
 class $modify(MyMenuLayer, MenuLayer) {
+
 	bool init() {
-		if (!MenuLayer::init()) {
-			return false;
+		if (!MenuLayer::init()) return false;
+
+		for (int i = 0; i < 3; i++) {
+			auto window = Window::create("Test");
+			window->setID(fmt::format("window-{}", i + 1));
+
+			auto btn = geode::Button::createWithLabel(fmt::format("Button {}", i + 1), "bigFont.fnt", [i] (auto self) {
+				createQuickPopup("WOW!", fmt::format("Clicked button {} in another window", i + 1), "OK", nullptr, nullptr);
+			});
+			btn->setScale(2);
+			btn->setPosition(window->getContentSize() / 2.f);
+			
+			window->addEventListener(Window::ResizeEvent(window), [btn] (CCSize size) {
+				btn->setPosition(size / 2);
+			});
+
+			window->addChild(btn);
+
+			addChild(window);
 		}
 
-		log::debug("Hello from my MenuLayer::init hook! This layer has {} children.", this->getChildrenCount());
-
-		auto myButton = CCMenuItemSpriteExtra::create(
-			CCSprite::createWithSpriteFrameName("GJ_likeBtn_001.png"),
-			this,
-			menu_selector(MyMenuLayer::onMyButton)
-		);
-
-		auto menu = this->getChildByID("bottom-menu");
-		menu->addChild(myButton);
-
-		myButton->setID("my-button"_spr);
-
-		menu->updateLayout();
-
 		return true;
-	}
-
-	void onMyButton(CCObject*) {
-		FLAlertLayer::create("Geode", "Hello from my custom mod!", "OK")->show();
 	}
 };
